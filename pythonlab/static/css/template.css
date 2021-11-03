@@ -1,0 +1,9 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+  }
+  
+  .logo {
+    background-color: #8598f8;
+    padding: 10px;
+    color: rgb(240, 245, 248);
+  }
