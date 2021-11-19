@@ -1,0 +1,15 @@
+[app]
+172.20.10.111
+172.20.10.112
+
+[database]
+172.20.10.113
+
+[all]
+172.20.10.111
+172.20.10.112
+172.20.10.113
+
+[all:vars]
+ansible_ssh_user=vagrant
+ansible_ssh_pass=vagrant

@@ -1,0 +1,31 @@
+---
+- hosts: db
+  become: true
+
+  tasks:
+    - name: Update apt-get repo and cache
+      apt:
+      update_cache: yes
+      force_apt_get: yes
+      cache_valid_time: 3600
+
+    - name: Ensure mysql-server is present
+      apt:
+        name:
+          - mysql-server
+          - vim
+          - php-mysql
+        state: present
+
+    - name: Allow all access to port 80
+      community.general.ufw:
+        rule: allow
+        name: 'Apache'
+
+    - name: Copy file with owner and permissions
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: '0644'
