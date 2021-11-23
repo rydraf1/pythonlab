@@ -4,7 +4,7 @@
 
   vars:
     ansible_python_interpreter: /usr/bin/python3
-    user_name: "Raphael Adams"
+    user_name: "rydraf1"
     user_email: "rydraf@gmail.com"
 
     tasks:
@@ -39,7 +39,7 @@
 
       - name: Copy aws credentials to new server
         copy:
-          src: /home/rydraf/.aws/credentials
-          dest: /home/rydraf/.aws/credentials
+          src: /home/rydraf1/.aws/credentials
+          dest: /home/rydraf1/.aws/credentials
 
              

@@ -12,10 +12,10 @@ Vagrant.configure(2) do |config|
   config.vm.define "app" do |app|
     app.vm.hostname = "app"
     app.vm.network  "private_network", ip: "172.20.20.111"
-    app.vm.provision "ansible_local" do |ansible|
-      ansible.playbook = "webapp.yml"
-      ansible.verbose = true
-    end
+    # app.vm.provision "ansible_local" do |ansible|
+    #   ansible.playbook = "webapp.yml"
+    #   ansible.verbose = true
+    #  end
   end
 
   config.vm.define "app2" do |app2|
@@ -26,10 +26,10 @@ Vagrant.configure(2) do |config|
   config.vm.define "db" do |db|
     db.vm.hostname = "db"
     db.vm.network  "private_network", ip: "172.20.20.113"
-    db.vm.provision "ansible_local" do |ansible|
-      ansible.playbook = "db.yml"
-      ansible.verbose = true
-    end
+    #db.vm.provision "ansible_local" do |ansible|
+      #ansible.playbook = "db.yml"
+      #ansible.verbose = true
+    #end
   end
 
   config.vm.define "ctrl" do |ctrl|
@@ -40,6 +40,8 @@ Vagrant.configure(2) do |config|
       sudo apt-get install -y ansible git sshpass
       sudo apt-get install -y vagrant vim
       sudo cp /Ansible/hosts /etc/ansible/hosts
+      #sudo sed -i "s/.*#host_key_checking.*/host_key_checking = False/" /etc/ansible/ansible.cfg
+      
       
       SHELL
       #ctrl.vm.provision "ansible_local" do |ansible|

@@ -7,7 +7,7 @@
    <?php
       $ip_server = $_SERVER['SERVER_ADDR'];
       echo "Server IP Address is: $ip_server";
-      $dbname = "192.168.8.100";
+      $dbname = "172.20.20.113";
       $username = "admin";
       $password = "Test@1234";
       echo "<br>";

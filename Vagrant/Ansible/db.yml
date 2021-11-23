@@ -2,9 +2,7 @@
 - hosts: database
   become: true
   
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-    mysql_password: "Test@1234"
+  
 
   tasks:
     - name: Update apt-get repo and cache
@@ -29,15 +27,37 @@
         regexp: '^bind-address'
         line: bind-address = 0.0.0.0
 
-  
-
-    - name: Create database user with name 'bob' and password '12345' with all database privileges
+    - name: Create database remote users with name 'admin' with all database privileges
       mysql_user:
         name: admin
         password: Test@1234
-        priv: '*.*:ALL'
+        priv: '*.*:ALL,GRANT'
+        host: 172.20.20.111
         state: present
         login_unix_socket: /var/run/mysqld/mysqld.sock
+
+       
+
+
+    - name: Create DEVOPS Database
+      mysql_db:
+        name: DEVOPS
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+
+    - name: Restart MySQL Services
+      service:
+        name: mysql
+        state: restarted
+
+    - name: Allow all access to apps
+      ufw:
+        rule: allow
+        port: '3306'
+        state: enabled
+
+
 
 
 
