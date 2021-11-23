@@ -1,30 +1,45 @@
 Vagrant.configure(2) do |config|
 	config.vm.box = "generic/ubuntu2004"
-	#config.disksize.size = "10GB"
 	config.vm.provider "virtualbox" do |vb|
-    	vb.gui = false
+    vb.gui = false
 		vb.memory = "1024"
-		#vb.disksize.size = '10GB'
-	end	
-			config.vm.define "db" do |db|
-			#db.ssh.username = "rydraf"
-			db.vm.hostname = "Database"
-			#db.vm.network "private_network", ip: "172.20.10.100",
-				#virtualbox__intnet: true
-			db.vm.network "public_network", ip: "192.168.8.100"
-			db.vm.synced_folder "../vagrant", "/vagrant"
-			db.vm.provision "shell", path: "bootstrap1.sh"
-    		
-		end
+    #vb.cpu = "1"
+  end
+  config.vm.synced_folder ".", "/Ansible"
+  config.ssh.password = "vagrant"
+  
+  config.vm.define "haproxy" do |haproxy|
+    haproxy.vm.hostname = "haproxy"
+    haproxy.vm.network  "private_network", ip: "172.20.20.10"
+  end
+
+  config.vm.define "web1" do |web1|
+    web1.vm.hostname = "web1"
+    web1.vm.network  "private_network", ip: "172.20.20.11"
+  end
+
+  config.vm.define "web2" do |web2|
+    web2.vm.hostname = "web2"
+    web2.vm.network  "private_network", ip: "172.20.20.12"
+  end
 	
-		config.vm.define "web" do |web|
-			#web.ssh.username = "rydraf"
-			web.vm.hostname = "WebServer"
-			#web.vm.network "private_network", ip: "172.20.10.200",
-			#	virtualbox__intnet: true
-			web.vm.network "public_network", ip: "192.168.8.200"
-			web.vm.synced_folder "../vagrant", "/vagrant"
-			web.vm.provision "shell", path: "bootstrap.sh"
-		end
-	
-	end
+#   config.vm.define "db" do |db|
+#     db.vm.hostname = "db"
+#     db.vm.network  "private_network", ip: "172.20.20.113"
+#   end
+
+  config.vm.define "ctrl" do |ctrl|
+    ctrl.vm.hostname = "ctrl"
+    ctrl.vm.network  :private_network, ip: "172.20.20.2"
+    ctrl.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get install -y ansible git sshpass
+      sudo apt-get install -y vagrant vim
+      sudo cp /Ansible/hosts /etc/ansible/hosts
+      sudo sed -i "s/.*#host_key_check.*/host_key_checking = False/" /etc/ansible/ansible.cfg
+      
+      
+      SHELL
+
+  end
+end
