@@ -23,8 +23,8 @@
       ufw:
         rule: allow
         port: '80'
-        port: '3306'
-        port: '22'
+        # port: '3306'
+        # port: '22'
         proto: tcp
         state: enabled
 
@@ -43,26 +43,26 @@
           
           # HAproxy for Web Servers
           #------------------------------------------------------------------------------
-          frontend web-frontend
+          frontend web
             bind 172.20.20.10:80
             mode http
-            default_backend web-default_backend
+            default_backend web
 
-          backend web-backend
+          backend web
             balance roundrobin
-            server web1 172.20.20.11:80
-            server web1 172.20.20.12:80
+            server web1 172.20.20.11:80 check
+            server web2 172.20.20.12:80 check
 
 
           #HAProxy Monitoring Config
           #--------------------------------------------------------------------------------------------
-          listen stats
-            bind 172.20.20.10:8080
-            mode http option forwardfor
-            option hhtpclose
-            stats enable
-            stats show-legends
-            stats refresh 5s
-            stats uri /stats
-            stats realm Haproxy\ Statistics
-            Stats auth vagrant:vagrant       
+            listen stats
+             bind 172.20.20.10:8080
+             mode http option forwardfor
+             option hhtpclose
+             stats enable
+             stats show-legends
+             stats refresh 5s
+             stats uri /stats
+             stats realm Haproxy\ Statistics
+             Stats auth vagrant:vagrant       

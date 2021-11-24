@@ -2,7 +2,7 @@ Vagrant.configure(2) do |config|
 	config.vm.box = "generic/ubuntu2004"
 	config.vm.provider "virtualbox" do |vb|
     vb.gui = false
-		vb.memory = "800"
+		vb.memory = "256"
     #vb.cpu = "1"
   end
   config.vm.synced_folder ".", "/Ansible"

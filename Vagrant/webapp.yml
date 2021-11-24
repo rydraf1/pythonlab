@@ -17,9 +17,9 @@
         name:
           - apache2
           - php
-          - libapache2-mod-php
-          - mysql-client
-          - php-mysql
+          # - libapache2-mod-php
+          # - mysql-client
+          # - php-mysql
         state: present
 
     - name: Allow all access to tcp port 80 and 3306
@@ -43,8 +43,8 @@
         
     - name: Copy file with owner and permissions
       ansible.builtin.copy:
-        src: /Ansible/index.php
-        dest: /var/www/html/index.php
+        src: /Ansible/index.html
+        dest: /var/www/html/index.html
 
 
 - hosts: web2
@@ -60,6 +60,6 @@
         
     - name: Copy file with owner and permissions
       ansible.builtin.copy:
-        src: /Ansible/html/index.php
-        dest: /var/www/html/index.php
+        src: /Ansible/html/index.html
+        dest: /var/www/html/index.html
 
