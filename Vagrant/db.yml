@@ -32,10 +32,11 @@
         name: admin
         password: Test@1234
         priv: '*.*:ALL,GRANT'
-        host: 172.20.20.11 - 172.20.20.12
+        host: 172.20.20.12
         state: present
         login_unix_socket: /var/run/mysqld/mysqld.sock
 
+      
        
 
 

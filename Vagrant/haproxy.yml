@@ -23,8 +23,8 @@
       ufw:
         rule: allow
         port: '80'
-        # port: '3306'
-        # port: '22'
+        port: '3306'
+        port: '22'
         proto: tcp
         state: enabled
 
@@ -53,16 +53,9 @@
             server web1 172.20.20.11:80 check
             server web2 172.20.20.12:80 check
 
+    - name: Restart HAProxy Services
+      service:
+        name: haproxy
+        state: restarted 
 
-          #HAProxy Monitoring Config
-          #--------------------------------------------------------------------------------------------
-            listen stats
-             bind 172.20.20.10:8080
-             mode http option forwardfor
-             option hhtpclose
-             stats enable
-             stats show-legends
-             stats refresh 5s
-             stats uri /stats
-             stats realm Haproxy\ Statistics
-             Stats auth vagrant:vagrant       
+               
