@@ -1,0 +1,68 @@
+---
+- hosts: haproxy
+  become: true
+  
+  
+
+  tasks:
+
+    - name: Update apt-get repo and cache
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 3600
+
+    - name: "Configure Load balancer"
+      apt:
+        name: 
+          - haproxy
+          - vim
+        state: present
+    
+    - name: Allow all access to tcp port 80 and 3306
+      ufw:
+        rule: allow
+        port: '80'
+        port: '3306'
+        port: '22'
+        proto: tcp
+        state: enabled
+
+
+
+    - name: Restart HAProxy Services
+      service:
+        name: haproxy
+        state: restarted  
+
+    - name: Insert "webserver" configuration & HAProxy Monitoring blocks in /etc/haproxy/haproxy.cfg
+      blockinfile:
+        path: /etc/haproxy/haproxy.cfg
+        block: |
+          
+          
+          # HAproxy for Web Servers
+          #------------------------------------------------------------------------------
+          frontend web-frontend
+            bind 172.20.20.10:80
+            mode http
+            default_backend web-default_backend
+
+          backend web-backend
+            balance roundrobin
+            server web1 172.20.20.11:80
+            server web1 172.20.20.12:80
+
+
+          #HAProxy Monitoring Config
+          #--------------------------------------------------------------------------------------------
+          listen stats
+            bind 172.20.20.10:8080
+            mode http option forwardfor
+            option hhtpclose
+            stats enable
+            stats show-legends
+            stats refresh 5s
+            stats uri /stats
+            stats realm Haproxy\ Statistics
+            Stats auth vagrant:vagrant       

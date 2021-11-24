@@ -1,5 +1,5 @@
 ---
-- hosts: app
+- hosts: web
   become: true
 
    
@@ -32,8 +32,10 @@
         state: enabled
 
         
-
-    
+- hosts: web1
+  become: true
+  
+  tasks:
     - name: Remove file index.html
       file:
         path: /var/www/html/index.html
@@ -41,6 +43,23 @@
         
     - name: Copy file with owner and permissions
       ansible.builtin.copy:
-        src: ../files/index.php
+        src: /Ansible/index.php
         dest: /var/www/html/index.php
+
+
+- hosts: web2
+  become: true
+
+ 
+  tasks:
+   
+    - name: Remove file index.html
+      file:
+        path: /var/www/html/index.html
+        state: absent
         
+    - name: Copy file with owner and permissions
+      ansible.builtin.copy:
+        src: /Ansible/html/index.php
+        dest: /var/www/html/index.php
+
