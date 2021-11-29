@@ -16,7 +16,7 @@
          $conn = new PDO("mysql:host=$dbname;dbname=DEVOPS", $username, $password);
          // set the PDO error mode to exception
          $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-         echo "Connected successfully to mysql database at IP address $dbname from Web Server2";
+         echo "Connected successfully to mysql database at IP address $dbname";
       } catch(PDOException $e) {
          echo "Connection failed: " . $e->getMessage();
       }

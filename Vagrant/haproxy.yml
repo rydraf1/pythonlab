@@ -16,24 +16,29 @@
       apt:
         name: 
           - haproxy
-          - vim
         state: present
     
-    - name: Allow all access to tcp port 80 and 3306
+    - name: Allow all access to tcp port 80
       ufw:
         rule: allow
         port: '80'
-        port: '3306'
+        # port: '3306'
+        proto: tcp
+        state: enabled
+
+    - name: Allow all access to tcp port 22
+      ufw:
+        rule: allow
         port: '22'
         proto: tcp
         state: enabled
 
+    
 
-
-    - name: Restart HAProxy Services
-      service:
-        name: haproxy
-        state: restarted  
+    # - name: Restart HAProxy Services
+    #   service:
+    #     name: haproxy
+    #     state: restarted  
 
     - name: Insert "webserver" configuration & HAProxy Monitoring blocks in /etc/haproxy/haproxy.cfg
       blockinfile:
@@ -53,9 +58,15 @@
             server web1 172.20.20.11:80 check
             server web2 172.20.20.12:80 check
 
-    - name: Restart HAProxy Services
-      service:
-        name: haproxy
-        state: restarted 
+    notify: Restart haproxy
 
-               
+    # - name: Restart HAProxy Services
+    #   service:
+    #     name: haproxy
+    #     state: restarted 
+
+  handlers:
+  - name: Restart haproxy
+    service:
+      name: haproxy
+      state: restarted             

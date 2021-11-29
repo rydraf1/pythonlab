@@ -15,7 +15,6 @@
       apt:
         name:
           - mysql-server
-          - vim
           - php-mysql
           - python3-pymysql
         state: present
@@ -26,13 +25,14 @@
         path: /etc/mysql/mysql.conf.d/mysqld.cnf
         regexp: '^bind-address'
         line: bind-address = 0.0.0.0
+      notify: Restart mysql
 
     - name: Create database remote users with name 'admin' with all database privileges
       mysql_user:
         name: admin
         password: Test@1234
         priv: '*.*:ALL,GRANT'
-        host: 172.20.20.12
+        host_all: yes
         state: present
         login_unix_socket: /var/run/mysqld/mysqld.sock
 
@@ -47,16 +47,22 @@
         login_unix_socket: /var/run/mysqld/mysqld.sock
 
 
-    - name: Restart MySQL Services
-      service:
-        name: mysql
-        state: restarted
+    # - name: Restart MySQL Services
+    #   service:
+    #     name: mysql
+    #     state: restarted
 
     - name: Allow all access to apps
       ufw:
         rule: allow
         port: '3306'
         state: enabled
+
+  handlers:
+    - name: Restart mysql
+      service:
+        name: mysql
+        state: restarted
 
 
 

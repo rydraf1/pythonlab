@@ -22,17 +22,13 @@
           - php-mysql
         state: present
 
-    - name: Allow all access to tcp port 80 and 3306
+    - name: Allow all access to tcp port 80 
       ufw:
         rule: allow
         port: '80'
         state: enabled
 
-        
-- hosts: web1
-  become: true
-  
-  tasks:
+    
     - name: Remove file index.html
       file:
         path: /var/www/html/index.html
@@ -42,33 +38,62 @@
       ansible.builtin.copy:
         src: /Ansible/index.php
         dest: /var/www/html/index.php
+      notify: Restart apache2
 
-    - name: Restart Apache Services
+    # - name: Restart Apache Services
+    #   service:
+    #     name: apache2
+    #     state: restarted
+
+
+  handlers:
+    - name: Restart apache2
       service:
         name: apache2
         state: restarted
+
+
+        
+# - hosts: web1
+#   become: true
+  
+#   tasks:
+#     - name: Remove file index.html
+#       file:
+#         path: /var/www/html/index.html
+#         state: absent
+        
+#     - name: Copy file with owner and permissions
+#       ansible.builtin.copy:
+#         src: /Ansible/index.php
+#         dest: /var/www/html/index.php
+
+#     - name: Restart Apache Services
+#       service:
+#         name: apache2
+#         state: restarted
 
     
 
 
-- hosts: web2
-  become: true
+# - hosts: web2
+#   become: true
 
  
-  tasks:
+#   tasks:
    
-    - name: Remove file index.html
-      file:
-        path: /var/www/html/index.html
-        state: absent
+#     - name: Remove file index.html
+#       file:
+#         path: /var/www/html/index.html
+#         state: absent
         
-    - name: Copy file with owner and permissions
-      ansible.builtin.copy:
-        src: /Ansible/html/index.php
-        dest: /var/www/html/index.php
+#     - name: Copy file with owner and permissions
+#       ansible.builtin.copy:
+#         src: /Ansible/html/index.php
+#         dest: /var/www/html/index.php
 
-    - name: Restart Apache Services
-      service:
-        name: apache2
-        state: restarted
+#     - name: Restart Apache Services
+#       service:
+#         name: apache2
+#         state: restarted
 
