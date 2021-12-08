@@ -1,0 +1,207 @@
+---
+- hosts: wp
+  become: true
+
+   
+  
+  tasks:
+
+        
+    - name: “Installing pip”
+      yum:
+        name: python3-pip
+        state: present
+
+    - name: “Installing pymysql for dependency”
+      pip:
+        name: pymysql
+        state: present
+    
+    
+    
+    
+    - name: Ensure prerequisites are present
+      yum:
+        name:
+          - nginx
+          - php 
+          - php-fpm 
+          - php-curl 
+          - php-gd 
+          - php-intl 
+          - php-mbstring 
+          - php-soap 
+          - php-xml 
+          - php-xmlrpc 
+          - php-zip 
+          - mysql-server
+        state: present
+
+    - name: enable php-fpm
+      service:
+        name: php-fpm
+        enabled: yes
+
+
+    # - name: Remote sql access
+    #   blockinfile:
+    #     path: /etc/my.cnf
+    #     block: |
+          
+          
+          
+    #       bind-address = *
+    #       require_secure_transport = ON   
+
+        
+
+
+    - name: permit traffic in default on port 80/tcp
+      ansible.posix.firewalld:
+        port: 80/tcp
+        permanent: yes
+        state: enabled
+
+    - name: permit traffic in default on port 3306/tcp
+      ansible.posix.firewalld:
+        port: 3306/tcp
+        permanent: yes
+        state: enabled
+
+    - name: permit traffic in default on port 9000/tcp
+      ansible.posix.firewalld:
+        port: 9000/tcp
+        permanent: yes
+        state: enabled
+      
+
+    - name: Create wpsite Database
+      mysql_db:
+        name: WPSITE
+        state: present
+        # login_unix_socket: /var/lib/mysql/mysql.sock
+        
+
+    - name: Create database local user with name 'admin' with all database privileges
+      mysql_user:
+        name: admin
+        password: Test@1234
+        priv: '*.*:ALL,GRANT'
+        state: present
+        # login_unix_socket: /var/lib/mysql/mysql.sock
+      # notify: Restart Mysql
+
+
+    - name: Creates directory - /var/www/html/wpsite.com
+      file:
+        path: /var/www/html/wpsite.com
+        state: directory
+    
+    - name: shell copy
+      shell: cp -r /Ansible/wordpress/* /var/www/html/wpsite.com
+             
+      become: yes
+
+             
+
+    
+    # - name: Copy file with owner and permissions
+    #   ansible.builtin.copy:
+    #     src: /Ansible/wordpress/
+    #     dest: /var/www/html/wpsite.com
+    #     recurse: yes
+    #     mode: 0755
+
+      
+   
+
+
+    - file: 
+        path: /var/www/html/wpsite.com
+        mode: 0755
+        state: directory
+
+    
+
+    - name: Creating a wp config file (wpsite.com.conf) wp with content
+      copy:
+        dest: /etc/nginx/conf.d/wpsite.com.conf
+
+        content: |
+          server {
+          listen 80;
+          listen [::]:80;
+          root /var/www/html/wpsite.com; 
+          index index.php index.html index.htm; 
+          server_name wpsite.com www.wpsite.com; error_log /var/log/nginx/wpsite.com_error.log; 
+          access_log /var/log/nginx/wpsite.com_access.log; client_max_body_size 100M; 
+          location / { try_files $uri $uri/ /wordpress/index.php?$args; } location ~ .php$ { include fastcgi.conf; 
+          fastcgi_pass unix:/run/php-fpm/www.sock; fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; } } 
+                
+            
+   
+          
+
+    - name: Remove default nginx file1
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Remove default nginx file2
+      file:
+        path: /etc/nginx/sites-available/default
+        state: absent
+      notify: Restart nginx
+
+  
+     - name: permit traffic in default on port 80/tcp
+      ansible.posix.firewalld:
+        port: 80/tcp
+        permanent: yes
+        state: enabled
+
+    - name: permit traffic in default on port 3306/tcp
+      ansible.posix.firewalld:
+        port: 3306/tcp
+        permanent: yes
+        state: enabled
+
+    - name: permit traffic in default on port 9000/tcp
+      ansible.posix.firewalld:
+        port: 9000/tcp
+        permanent: yes
+        state: enabled
+      
+            
+
+
+      
+        
+
+    
+      
+      
+  
+
+
+
+
+
+
+
+
+
+
+
+  handlers:
+    - name: Restart Mysql
+      service:
+        name: mysqld
+        state: restarted
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+    
