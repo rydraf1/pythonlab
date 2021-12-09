@@ -6,4 +6,8 @@
 ansible_ssh_user=vagrant 
 ansible_ssh_pass=vagrant
 
+[all]
+wp_db_name: WPSITE
+wp_db_user: admin
+wp_db_password: Test@1234
 

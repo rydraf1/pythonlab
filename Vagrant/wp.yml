@@ -7,11 +7,7 @@
   tasks:
 
         
-    - name: “Installing pip”
-      yum:
-        name: python3-pip
-        state: present
-
+    
     - name: “Installing pymysql for dependency”
       pip:
         name: pymysql
@@ -35,45 +31,36 @@
           - php-xmlrpc 
           - php-zip 
           - mysql-server
+          - php-mysqlnd
         state: present
+      notify: Restart Mysql
 
+  
     - name: enable php-fpm
       service:
         name: php-fpm
         enabled: yes
+    
+    # - name: Disable default pool
+    #   command: mv /etc/php-fpm.d/www.conf /etc/php-fpm.d/www.disabled 
+    #   notify: restart php-fpm
 
 
-    # - name: Remote sql access
-    #   blockinfile:
-    #     path: /etc/my.cnf
-    #     block: |
-          
-          
-          
-    #       bind-address = *
-    #       require_secure_transport = ON   
+  #  - name: Replace nginx html folder
+  #     ansible.builtin.lineinfile:
+  #       path: /etc/nginx/nginx.conf
+  #       regexp: '^root         /usr/share/nginx/html'
+  #       line: root   /var/www/html/wpsite.com  ;
+  #     notify: Restart nginx
+    
 
+
+    - name: Copy file with owner and permissions
+      ansible.builtin.copy:
+        src: /Ansible/wpsite.com.conf
+        dest: /etc/php-fpm.d/wpsite.com.conf
         
 
-
-    - name: permit traffic in default on port 80/tcp
-      ansible.posix.firewalld:
-        port: 80/tcp
-        permanent: yes
-        state: enabled
-
-    - name: permit traffic in default on port 3306/tcp
-      ansible.posix.firewalld:
-        port: 3306/tcp
-        permanent: yes
-        state: enabled
-
-    - name: permit traffic in default on port 9000/tcp
-      ansible.posix.firewalld:
-        port: 9000/tcp
-        permanent: yes
-        state: enabled
-      
 
     - name: Create wpsite Database
       mysql_db:
@@ -105,75 +92,73 @@
              
 
     
-    # - name: Copy file with owner and permissions
-    #   ansible.builtin.copy:
-    #     src: /Ansible/wordpress/
-    #     dest: /var/www/html/wpsite.com
-    #     recurse: yes
-    #     mode: 0755
+    - name: Add group "wordpress"
+      group: name=wordpress gid=1010
 
+    - name: Add user "wordpress"
+      user: 
+        name: wordpress 
+        group: wordpress 
+        home: /var/www/html/wpsite.com/ 
+        uid: 1010
+
+    - name: Change ownership of WordPress installation
+      file: 
+        path: /var/www/html/wpsite.com 
+        owner: wordpress 
+        group: wordpress 
+        state: directory 
+        recurse: yes 
+        mode: 0755
+
+    - name: Ensure files have 644 permissions
+      command: chdir=/var find . -type f -exec chmod -R 0644 {} \;
       
    
-
-
-    - file: 
-        path: /var/www/html/wpsite.com
-        mode: 0755
-        state: directory
-
-    
-
     - name: Creating a wp config file (wpsite.com.conf) wp with content
       copy:
         dest: /etc/nginx/conf.d/wpsite.com.conf
 
         content: |
           server {
-          listen 80;
-          listen [::]:80;
-          root /var/www/html/wpsite.com; 
-          index index.php index.html index.htm; 
-          server_name wpsite.com www.wpsite.com; error_log /var/log/nginx/wpsite.com_error.log; 
-          access_log /var/log/nginx/wpsite.com_access.log; client_max_body_size 100M; 
-          location / { try_files $uri $uri/ /wordpress/index.php?$args; } location ~ .php$ { include fastcgi.conf; 
-          fastcgi_pass unix:/run/php-fpm/www.sock; fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; } } 
-                
-            
-   
+          listen       80 default_server;
+          server_name  wp;
+          root /var/www/html/wpsite.com  ;
+  
+          client_max_body_size 64M;
+  
+          # Deny access to any files with a .php extension in the uploads directory
+          location ~* /(?:uploads|files)/.*\.php$ {
+                  deny all;
+          }
+  
+          location / {
+                  index index.php index.html index.htm;
+                  try_files $uri $uri/ /index.php?$args;}
+  
+          location ~* \.(gif|jpg|jpeg|png|css|js)$ {
+                  expires max;}
+  
+          location ~ \.php$ {
+                  try_files $uri =404;
+                  fastcgi_split_path_info ^(.+\.php)(/.+)$;
+                  fastcgi_index index.php;
+                  fastcgi_pass  unix:/var/run/php-fpm/wordpress.sock;
+                  fastcgi_param   SCRIPT_FILENAME
+                                  $document_root$fastcgi_script_name;
+                  include       fastcgi_params; }}
           
+          
+    - name: insert firewalld rule for port 80
+      firewalld: port=80/tcp permanent=true state=enabled immediate=yes
+      ignore_errors: yes
 
-    - name: Remove default nginx file1
-      file:
-        path: /etc/nginx/sites-enabled/default
-        state: absent
-
-    - name: Remove default nginx file2
-      file:
-        path: /etc/nginx/sites-available/default
-        state: absent
-      notify: Restart nginx
+    - name: insert firewalld rule for port 3306
+      firewalld: port=3306/tcp permanent=true state=enabled immediate=yes
+      ignore_errors: yes
 
   
-     - name: permit traffic in default on port 80/tcp
-      ansible.posix.firewalld:
-        port: 80/tcp
-        permanent: yes
-        state: enabled
-
-    - name: permit traffic in default on port 3306/tcp
-      ansible.posix.firewalld:
-        port: 3306/tcp
-        permanent: yes
-        state: enabled
-
-    - name: permit traffic in default on port 9000/tcp
-      ansible.posix.firewalld:
-        port: 9000/tcp
-        permanent: yes
-        state: enabled
-      
-            
-
+  
 
       
         
@@ -203,5 +188,12 @@
       service:
         name: nginx
         state: restarted
+
+    - name: restart php-fpm
+      service:
+        name: php-fpm
+        state: restarted
+
+    
 
     
